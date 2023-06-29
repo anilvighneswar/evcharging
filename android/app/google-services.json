@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "442377608995",
+    "project_id": "evcharging-4ef38",
+    "storage_bucket": "evcharging-4ef38.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:442377608995:android:4f1b5a34b816ca120df696",
+        "android_client_info": {
+          "package_name": "com.example.evcharging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "442377608995-5p9461qbqfnjifmbttjcksnc0459u3o7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAe01qcA2vMa18ChZcaGFarPO_QMy3oklY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "442377608995-5p9461qbqfnjifmbttjcksnc0459u3o7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
