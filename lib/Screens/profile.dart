@@ -74,34 +74,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       body:
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ProfilePicture(
-            name: '$userName',
-            radius: 60,
-            fontsize: 25,
-            tooltip: false,
-            random: true,
-          ),
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(child: Text('$userName',style:TextStyle(color: Colors.black54,fontSize: 22,fontFamily: GoogleFonts.raleway().fontFamily,fontWeight: FontWeight.bold))),
-                Center(child:Text('$mail',style:TextStyle(color: Colors.black54,fontSize: 16,fontFamily: GoogleFonts.robotoCondensed().fontFamily))),
-                SizedBox(height: 30,),
-                buildTextBar('My Profile', Icons.person),
-                SizedBox(height: 30),
-                buildTextBar('Saved Chargers', Icons.charging_station_rounded),
-                SizedBox(height: 30),
-                buildTextBar('Settings', Icons.settings),
-              ],
+      SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ProfilePicture(
+              name: '$userName',
+              radius: 50,
+              fontsize: 25,
+              tooltip: false,
+              random: true,
             ),
-          ),
-          SizedBox(height: 100,)
-        ],
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(child: Text('$userName',style:TextStyle(color: Colors.black54,fontSize: 22,fontFamily: GoogleFonts.raleway().fontFamily,fontWeight: FontWeight.bold))),
+                  Center(child:Text('$mail',style:TextStyle(color: Colors.black54,fontSize: 16,fontFamily: GoogleFonts.robotoCondensed().fontFamily))),
+                  SizedBox(height: 30,),
+                  buildTextBar('My Profile', Icons.person),
+                  SizedBox(height: 30),
+                  buildTextBar('Saved Chargers', Icons.charging_station_rounded),
+                  SizedBox(height: 30),
+                  buildTextBar('Settings', Icons.settings),
+                ],
+              ),
+            ),
+            SizedBox(height: 100,)
+          ],
+        ),
       ),
     );
   }

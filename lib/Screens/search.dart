@@ -52,7 +52,7 @@ class _HomePageState extends ConsumerState<SearchPage> {
   int markerIdCounter = 1;
   int polylineIdCounter = 1;
 
-  var radiusValue = 3000.0;
+  var radiusValue = 9000.0;
 
   var tappedPoint;
 
@@ -499,7 +499,7 @@ class _HomePageState extends ConsumerState<SearchPage> {
                                 radiusSlider = false;
                                 pressedNear = false;
                                 cardTapped = false;
-                                radiusValue = 3000.0;
+                                /*radiusValue = 6000.0;*/
 
                                 _markers = {};
                                 allFavoritePlaces = [];

@@ -14,6 +14,7 @@ class LoginPage extends StatelessWidget {
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  bool pass=true;
 
   void signUserIn(BuildContext context) async {
     final _username = usernameController.text;
@@ -117,7 +118,7 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               MF(
-                hintText: 'username',
+                hintText: 'Username',
                 controller: usernameController,
                 obscureText: false,
                 keyboardtype: TextInputType.emailAddress,
@@ -127,19 +128,20 @@ class LoginPage extends StatelessWidget {
               ),
               SizedBox(height: 5),
               MF(
-                hintText: 'password',
+                hintText: 'Password',
                 controller: passwordController,
-                obscureText: true,
+                obscureText: pass,
                 keyboardtype: TextInputType.emailAddress,
                 decoration: InputDecoration(
                     prefixIcon: Icon(Icons.lock_outline,color: HexColor("#58B15C")),
-                    suffixIcon: IconButton(onPressed: () {} , icon: Icon(Icons.remove_red_eye_sharp),)
+                    suffixIcon: IconButton(onPressed: () {} ,
+                       icon: Icon(Icons.remove_red_eye_sharp),)
                 ),
               ),
               Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(onPressed: () {},
-                      child: Text('Forgot Password?   ',
+                      child: Text('Forgot Password?     ',
                           style:TextStyle(fontSize: 16,fontWeight: FontWeight.normal,color: Colors.black)))),
               Align(
                 alignment: Alignment.center,

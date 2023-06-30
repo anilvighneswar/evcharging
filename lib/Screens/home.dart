@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,6 +7,7 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import '../services/map_services.dart';
 import './search.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'mapbooking.dart';
@@ -21,17 +23,30 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> signUserOut() async {
     FirebaseAuth.instance.signOut();
   }
+
+  List assets=[{"id":1,"image_path":'assets/images/1.jpg'},
+               {"id":2,"image_path":'assets/images/2.jpg'},
+               {"id":3,"image_path":'assets/images/3.jpg'},
+               {"id":4,"image_path":'assets/images/4.jpg'},
+               {"id":5,"image_path":'assets/images/4.webp'},
+               {"id":6,"image_path":'assets/images/6.jpg'},
+               {"id":7,"image_path":'assets/images/7.jpg'}];
+  int currentIndex=0;             
   late PageController _pageController;
   List allFavoritePlaces = [];
   late dynamic distancemeter=0 ;
   String placeImg = '';
+  String address="";
   var tappedPoint;
   var radiusValue = 9000.0;
+  int prevPage = 0;
+  dynamic lat,long;
   String tokenKey = '';
   bool pressedNear = false;
   final key = 'AIzaSyDaUG88b5nV0n7Unyjsx0WNzdbVtUaaUpo';
   var tappedPlaceDetail;
   final myController = TextEditingController();
+  final CarouselController carouselController=CarouselController();
   Future<void> dista() async {
     final distancemeter=await distance();
   }
@@ -39,11 +54,67 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState()  {
     // TODO: implement initState
-    _pageController = PageController(initialPage: 1, viewportFraction: 0.85);
+    _pageController = PageController(initialPage: 1, viewportFraction: 0.85)
+    ..addListener(_onScroll);
     _determinePosition();
     place();
+    convertToAddress();
+    assets.shuffle();
     super.initState();
   }
+
+ void _onScroll() {
+    if (_pageController.page!.toInt() != prevPage) {
+      prevPage = _pageController.page!.toInt();
+      fetchImage();
+    }
+  }
+
+  convertToAddress() async {
+      Dio dio = Dio(); 
+      Position position=await _determinePosition();
+      lat=position.latitude;
+      long=position.longitude; //initilize dio package
+      String apiurl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$long&key=$key";
+    
+      Response response = await dio.get(apiurl); //send get request to API URL
+
+      if(response.statusCode == 200){ //if connection is successful
+          Map data = response.data; //get response data
+          if(data["status"] == "OK"){ //if status is "OK" returned from REST API
+              if(data["results"].length > 0){ //if there is atleast one address
+                 Map firstresult = data["results"][0]; //select the first address
+
+                 address = firstresult["formatted_address"]; //get the address
+
+                
+                 
+                 setState(() {
+                    //refresh UI
+                 });
+              }
+          }else{
+             print(data["error_message"]);
+          }
+      }else{
+         print("error while fetching geoconding data");
+      }  
+  }
+
+  void fetchImage() async {
+    if (_pageController.page !=
+        null) if (allFavoritePlaces[_pageController.page!.toInt()]
+    ['photos'] !=
+        null) {
+      setState(() {
+        placeImg = allFavoritePlaces[_pageController.page!.toInt()]['photos'][0]
+        ['photo_reference'];
+      });
+    } else {
+      placeImg = '';
+    }
+  }
+
   Future<void> place() async {
     Position position=await _determinePosition();
     tappedPoint=LatLng(position.latitude, position.longitude);
@@ -61,25 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
         placesResult['next_page_token'] ??
             'none';
 
-    /*placesWithin.forEach((element) {
-                                            _setNearMarker(
-                                              LatLng(
-                                                  element['geometry']
-                                                      ['location']['lat'],
-                                                  element['geometry']
-                                                      ['location']['lng']),
-                                              element['name'],
-                                              element['types'],
-                                              element['business_status'] ??
-                                                  'not available',
-                                            );
-                                          });*/
+   
 
     pressedNear = true;
 
 
-
-    setState(() {});
+   if(this.mounted){
+    setState(() {});}
   }
 
   @override
@@ -92,70 +151,67 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               children: [
                 const SizedBox(
-                  height: 90,
+                  height: 60,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 150,
-                      child: Center(
-                        child: Text(
-                          'My Booking',
-                          style: TextStyle(color: Colors.black, fontSize: 22),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 70,
-                      child: Center(
-                        child: Text(
-                          'See All',
-                          textDirection: TextDirection.rtl,
-                          style: TextStyle(color: Colors.black45, fontSize: 15),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              
+
                 Padding(
                   padding: const EdgeInsets.only(top: 0),
-                  child: Container(
-                    height: 240,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.all(10),
-                          width: 200,
-                          padding: EdgeInsets.all(20),
+                  child:InkWell(
+                    onTap: () {
+                      print(currentIndex);
+                    },
+                    child: CarouselSlider(items: assets
+                                           .map(
+                                            (item)=>Image.asset(
+                                              item['image_path'],
+                                              fit:BoxFit.cover ,
+                                              width: double.infinity,
+                                            ),
+                                           ).toList(),
+                                carouselController: carouselController,           
+                     options:CarouselOptions(
+                      scrollPhysics: const BouncingScrollPhysics(),
+                      autoPlay: true,
+                      height: 230,
+                      autoPlayInterval: const Duration(seconds: 3),
+                      viewportFraction: 1,
+                      onPageChanged: (index, reason) {
+                        setState(() {
+                          currentIndex=index;
+                        });
+                      },
+                     ), 
+                     ),
+                  ),
+                  
+                 
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 2,bottom: 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: assets.asMap().entries.map((entry){
+                      print(entry);
+                      print(entry.key);
+                      return GestureDetector(
+                        onTap: () => carouselController.animateToPage(entry.key),
+                        child: Container(
+                          width: currentIndex==entry.key?17:7,
+                          height: 7,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.grey[300]),
-                          child: Text('My Bookings'),
+                            borderRadius: BorderRadius.circular(10),
+                            color: currentIndex==entry.key
+                            ?HexColor('#18731B')
+                            :Colors.teal
+                          ),
                         ),
-                        Container(
-                          margin: EdgeInsets.all(10),
-                          width: 200,
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.grey[300]),
-                          child: Text('My Bookings'),
-                        ),
-                        Container(
-                          margin: EdgeInsets.all(10),
-                          width: 200,
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.grey[300]),
-                          child: Text('My Bookings'),
-                        )
-                      ],
-                    ),
+                      );
+                    }).toList(),
                   ),
                 ),
+               
                 const SizedBox(
                   height: 10,
                 ),
@@ -164,9 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(color: Colors.black, fontSize: 22),
                 ),
                 pressedNear
-                    ? Positioned(
-                    bottom: -120.0,
-                    child: Container(
+                    ? Container(
                       height: 200.0,
                       width: MediaQuery.of(context).size.width,
                       child: PageView.builder(
@@ -175,49 +229,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemBuilder: (BuildContext context, int index) {
                             return _nearbyPlacesList(index);
                           }),
-                    )):Container()
+                    ):Container()
 
               ],
             ),
+            
 
 
-            /* Padding(
-                  padding: const EdgeInsets.only(top: 0),
-                  child: Container(
-                    height: 150,
-                    child:
-                        ListView(scrollDirection: Axis.horizontal, children: [
-                      Container(
-                        margin: EdgeInsets.all(10),
-                        width: 240,
-                        padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.grey[300]),
-                        child: Text('Charging Station Name'),
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(10),
-                        width: 240,
-                        padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.grey[300]),
-                        child: Text('Charging Station Name'),
-                      ),
-                      Container(
-                        margin: EdgeInsets.all(10),
-                        width: 240,
-                        padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.grey[300]),
-                        child: Text('Charging Station Name'),
-                      ),
-                    ]),
-                  ),
-                )*/
-
+            
           ),
         ),
         Container(
@@ -239,10 +258,24 @@ class _HomeScreenState extends State<HomeScreen> {
               radius: 30,
               fontsize: 25,
               tooltip: true,
-              random: true,
+              random: false,
               role: 'User',
             ),
           ),
+        ),
+        Positioned(
+          left: 10,
+          top: 40,
+          child:Icon(Icons.location_on_outlined)
+        ),
+        Positioned(
+          left: 33,
+          top: 35,
+          child:Container(
+            height: 50,
+            width: 150,
+            child: Text(address,maxLines: 2),
+          )
         ),
         Positioned(
           top: 91,
@@ -260,19 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(color: Colors.black, fontSize: 20),
           ),
         ),
-        /*pressedNear
-                    ? Positioned(
-                        bottom: -120.0,
-                        child: Container(
-                          height: 200.0,
-                          width: MediaQuery.of(context).size.width,
-                          child: PageView.builder(
-                              controller: _pageController,
-                              itemCount: allFavoritePlaces.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return _nearbyPlacesList(index);
-                              }),
-                        )):*/
+         
+       
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 140, horizontal: 10),
           child: Container(
@@ -303,19 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        /*pressedNear
-                    ? Positioned(
-                        bottom: -120.0,
-                        child: Container(
-                          height: 200.0,
-                          width: MediaQuery.of(context).size.width,
-                          child: PageView.builder(
-                              controller: _pageController,
-                              itemCount: allFavoritePlaces.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return _nearbyPlacesList(index);
-                              }),
-                        )):*/
+        
 
 
 
@@ -340,16 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-      /*child: InkWell(
-        onTap: () async {
-          cardTapped = !cardTapped;
-          if (cardTapped) {
-            tappedPlaceDetail = await MapServices()
-                .getPlace(allFavoritePlaces[index]['place_id']);
-            setState(() {});
-          }
-          moveCameraSlightly();
-        },*/
+      
       child: Stack(
         children: [
 
@@ -360,13 +361,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 vertical: 20.0,
               ),
               height: 145.0,
-              width: 275.0,
+              width: 300.0,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
                   boxShadow: [
                     BoxShadow(
                         color: Colors.black54,
-                        offset: Offset(0.0, 4.0),
+                        offset: Offset(0.0, 9.0),
                         blurRadius: 10.0)
                   ]),
               child: Container(
@@ -379,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? _pageController.page!.toInt() == index
                         ? Container(
                       height: 140.0,
-                      width: 90.0,
+                      width: 100.0,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(10.0),
@@ -388,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           image: DecorationImage(
                               image: NetworkImage(placeImg != ''
                                   ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=$placeImg&key=$key'
-                                  : 'https://pic.onlinewebfonts.com/svg/img_546302.png'),
+                                  : 'https://media.cnn.com/api/v1/images/stellar/prod/220608193558-02-electric-vehicle-charging-station.jpg?c=original'),
                               fit: BoxFit.cover)),
                     )
                         : Container(
@@ -436,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           starSpacing: 2,
                           maxValueVisibility: false,
                           valueLabelVisibility: true,
-                          animationDuration: Duration(milliseconds: 1000),
+                          animationDuration: Duration(milliseconds: 100),
                           valueLabelPadding: const EdgeInsets.symmetric(
                               vertical: 1, horizontal: 8),
                           valueLabelMargin: const EdgeInsets.only(right: 8),
